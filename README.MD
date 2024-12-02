@@ -19,9 +19,15 @@ Intended for C programmer looking to quickly initialize a project file structure
 ### Installing
 
 Simply clone the repo
+copy to project base directory
+change permissions
 
 ```
 git clone https://github.com/furttech/[repo_name]
+
+cp ./project_builder.sh [project directory location]/pBuilder.sh
+
+chmod 755 ./pBuilder.sh
 ```
 
 ## Run The Script
