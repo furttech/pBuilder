@@ -118,7 +118,12 @@ then
 	 | |                                                  
 	 |_|                                                  
 	
-	 v.BETA\n'
+	v0.1BETA
+	responsible idiot - @furttech aka Haxosouras.rex
+
+	Simply Start Coding C with pBuilder!
+
+	\n'
 
 	if [[ ${project_directory} != ${DEFAULT_PROJECT_ROOT} ]]
 	then
