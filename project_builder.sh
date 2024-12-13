@@ -1,34 +1,24 @@
 #!/bin/bash
 
 declare TARGET_BASE_DIR="home"
-declare DEFAULT_PROJECT_ROOT="default_project"
-declare DEFAULT_PROJECT_NAME="pBuilder_skeleton"
+
 verbose_flag=0
 git_flag=0
 make_flag=0
-project_directory=${DEFAULT_PROJECT_ROOT}
-project_name=${DEFAULT_PROJECT_NAME}
 
 # Display Script Usage
 usage() {
+	echo " "
 	echo "Usage ${0} [OPTIONS]"	
+	echo " "
 	echo "Options:"
 	echo "-h, --help 	Display help message"
 	echo "-v, --verbose	Enable Verbose Mode "
-	echo "-d  --basedir	Project Directory Name"
-	echo "-n  --name	Project Name"
-	echo "-g  --git-enabled	Initialize git Repo Skeleton"
-	echo "-m  --make	Initialise make file"
-}
-
-argument_validation() {
-
-	[[ ("${1}" == *=* && -n ${1#*=}) || ( ! -z "${2}" && "${2}" != -* ) ]];
-}
-
-parse_option_arg() {
-
-	echo "${2:-${1#*= }}" 
+	echo "-g, --git-enabled	Initialize git Repo Skeleton"
+	echo " "
+	echo "Example:"
+	echo "	./script_name -v -g -m"
+	echo " "
 }
 
 # Runs firstly set script behalvour base on user options 
@@ -48,42 +38,13 @@ options_handler() {
 			-m | --make)
 				make_flag=1
 				;;
-			-d* | --basedir*)
-	   			if ! argument_validation ${@}; then
-					echo "Directory Not Specified" >&2		
-					usage
-					fatal
-				fi
-			
-				project_directory=$(parse_option_arg ${@})
-				
-				## BETA DEBUG DELETE DEBUG
-				printf "DEBUG :: PDIR :: %s \n" ${project_directory}
-
-				shift
-				;;
-	  		-n* | --name*)
-				if ! argument_validation ${@}; then
-					echo "Name Not Specified" >&2 
-					usage
-					fatal
-				fi
-	
-				project_name=$(parse_option_arg ${@})
-		
-				## BETA DEBUG DELETE DEBUG
-				printf "DEBUG :: PNAME :: %s \n" ${project_name}
-
-				shift
-				;;
 			*)
-	   			printf "Invalid Option: %s \n" ${1}
-				
+				echo "Invalid Argument" ${1}
 				usage
-				exit 1
+				fatal
 				;;
-	  	esac
-	  	shift
+			esac
+			shift
 	done
 }
 
@@ -92,6 +53,34 @@ fatal() {
 	# TO STD ERR
 	echo "${0} : Fatal Error:" "${@}" >&2
 	exit 1
+}
+
+project_setup() {
+
+	# Request user input for Project Folder Name
+	read -p "Enter Project Folder Name:" project_folder
+
+	if [[ ${verbose_flag} == 1 ]]; then
+		printf "Generating Main Project Folder %s \n" ${project_folder}
+	fi
+
+	# Request user input for Project File Name
+	read -p "Enter Project File Name:" project_name
+	
+	if [[ ${verbose_flag} == 1 ]]; then
+		printf "Initializing Main Project Files %s[.c/.h] \n" ${project_name}
+	fi
+	
+	$(mkdir ${project_folder})
+	$(mkdir "${project_folder}/include")
+	$(mkdir "${project_folder}/lib")	
+	$(mkdir "${project_folder}/src")
+	$(mkdir "${project_folder}/src/obj")
+	$(touch "${project_folder}/src/obj/${project_name}.o")
+	$(touch "${project_folder}/src/${project_name}.c")
+	$(touch "${project_folder}/src/makefile")
+	$(touch "${project_folder}/include/${project_name}.h")
+
 }
 
 # split $PWD into paths array
@@ -125,22 +114,11 @@ then
 
 	\n'
 
-	if [[ ${project_directory} != ${DEFAULT_PROJECT_ROOT} ]]
-	then
-		printf "Project Root : %s \n" ${project_directory}
-	else	
-		printf "Creating Default ROOT Dir : %s \n" ${DEFAULT_PROJECT_ROOT}
-	fi
-	
-	if [[ ${project_name} != ${DEFAULT_PROJECT_NAME} ]]
-	then
-		printf "Project Name: %s \n" ${project_name}
-	else	
-		printf "Creating Default Project : %s \n" ${DEFAULT_PROJECT_NAME}
-	fi
-
-
 	if [[ ${git_flag} == 1 ]]; then echo "Git Enabled"; else echo "Git Disabled"; fi
 	
 	if [[ ${make_flag} == 1 ]]; then echo "'make' File Enabled"; else echo "'make' Disabled"; fi
+
 fi
+
+## Setup Project
+project_setup
