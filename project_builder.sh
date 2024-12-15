@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Reset IFS (Internal Field Seperator) to prevent word splitting attacks
+IFS=$' \t\n'
+
 declare TARGET_BASE_DIR="home"
 
 verbose_flag=0
@@ -14,7 +17,7 @@ usage() {
 	echo "Options:"
 	echo "-h, --help 	Display help message"
 	echo "-v, --verbose	Enable Verbose Mode "
-	echo "-g, --git-enabled	Initialize git Repo Skeleton"
+	echo "-g, --eit-enabled	Initialize git Repo Skeleton"
 	echo " "
 	echo "Example:"
 	echo "	./script_name -v -g -m"
@@ -50,8 +53,8 @@ options_handler() {
 
 # Fatal Error Exit Rotine
 fatal() {
-	# TO STD ERR
-	echo "${0} : Fatal Error:" "${@}" >&2
+	# Use subshell to limit command scope
+	$(bash -c 'printf "%s : Fatal Error: %s" ${0} ${@}' >&2 )
 	exit 1
 }
 
@@ -60,27 +63,50 @@ project_setup() {
 	# Request user input for Project Folder Name
 	read -p "Enter Project Folder Name:" project_folder
 
-	if [[ ${verbose_flag} == 1 ]]; then
-		printf "Generating Main Project Folder %s \n" ${project_folder}
-	fi
+	# Remove path traveral attempts
+	pf_c=$(basename "${project_folder}")
+
+	# Check User Input for unwanted charaters 
+	if [[ "$pf_c" =~ ^[[:alnum:]_]+$ ]]; then
+	
+		if [[ ${verbose_flag} == 1 ]]; then
+			printf "Generating Main Project Folder %s \n" ${pf_c}
+		fi
+		
+	else	
+		printf "Invalid Character String : Folder Name %s \n" ${pf_c}
+		fatal 
+	fi	
+
 
 	# Request user input for Project File Name
 	read -p "Enter Project File Name:" project_name
 	
-	if [[ ${verbose_flag} == 1 ]]; then
-		printf "Initializing Main Project Files %s[.c/.h] \n" ${project_name}
-	fi
+	# Remove path traversal breakout attempt
+	pn_c=$(basename "${project_name}")
 	
-	$(mkdir ${project_folder})
-	$(mkdir "${project_folder}/include")
-	$(mkdir "${project_folder}/lib")	
-	$(mkdir "${project_folder}/src")
-	$(mkdir "${project_folder}/src/obj")
-	$(touch "${project_folder}/src/obj/${project_name}.o")
-	$(touch "${project_folder}/src/${project_name}.c")
-	$(touch "${project_folder}/src/makefile")
-	$(touch "${project_folder}/include/${project_name}.h")
+	# Check User Input for Invalid Character
+	if [[ "${pn_c}" =~ ^[[:alnum:]_]+$ ]]; then
+	
+		if [[ ${verbose_flag} == 1 ]]; then
+			printf "Initializing Main Project Files %s[.c/.h] \n" ${pn_c}
+		fi	
+	else
+		printf "Invalid Character String : Project Name %s \n" ${pn_c}
+		fatal 
+	fi
 
+	# Create Project Directory Structure	
+	$(mkdir ${pf_c})
+	$(mkdir "${pf_c}/include")
+	$(mkdir "${pf_c}/lib")	
+	$(mkdir "${pf_c}/src")
+	$(mkdir "${pf_c}/src/obj")
+
+	$(touch "${pf_c}/src/obj/${pn_c}.o")
+	$(touch "${pf_c}/src/${pn_c}.c")
+	$(touch "${pf_c}/src/makefile")
+	$(touch "${pf_c}/include/${pn_c}.h")
 }
 
 # split $PWD into paths array
